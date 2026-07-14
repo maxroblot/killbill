@@ -141,8 +141,8 @@ public class InvoiceItemCatalogBase extends InvoiceItemBase implements InvoiceIt
 
     @Override
     public int hashCode() {
+        // Note: catalogEffectiveDate is intentionally excluded here, consistently with matches()/equals() above.
         int result = super.hashCode();
-        result = 31 * result + (catalogEffectiveDate != null ? catalogEffectiveDate.hashCode() : 0);
         result = 31 * result + (planName != null ? planName.hashCode() : 0);
         result = 31 * result + (phaseName != null ? phaseName.hashCode() : 0);
         result = 31 * result + (usageName != null ? usageName.hashCode() : 0);

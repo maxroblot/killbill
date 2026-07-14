@@ -262,7 +262,9 @@ public class DefaultBlockingState extends EntityBase implements BlockingState {
         result = 31 * result + (blockChange ? 1 : 0);
         result = 31 * result + (blockEntitlement ? 1 : 0);
         result = 31 * result + (blockBilling ? 1 : 0);
-        result = 31 * result + (effectiveDate != null ? effectiveDate.hashCode() : 0);
+        // Note: consistent with equals() above, which compares effectiveDate by instant (compareTo), not by Joda-Time's
+        // hashCode() (which also factors in the Chronology).
+        result = 31 * result + (effectiveDate != null ? Long.hashCode(effectiveDate.getMillis()) : 0);
         result = 31 * result + (type != null ? type.hashCode() : 0);
         result = 31 * result + (totalOrdering != null ? totalOrdering.hashCode() : 0);
         result = 31 * result + (isActive ? 1 : 0);
