@@ -36,8 +36,8 @@ public class CreateOverdueConfigSchema {
         }
 
         final File f = new File(args[0]);
-        final Writer w = new FileWriter(f, StandardCharsets.UTF_8);
-        w.write(XMLSchemaGenerator.xmlSchemaAsString(DefaultOverdueConfig.class));
-        w.close();
+        try (final Writer w = new FileWriter(f, StandardCharsets.UTF_8)) {
+            w.write(XMLSchemaGenerator.xmlSchemaAsString(DefaultOverdueConfig.class));
+        }
     }
 }

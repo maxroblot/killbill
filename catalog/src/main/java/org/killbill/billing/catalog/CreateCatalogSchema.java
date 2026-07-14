@@ -35,8 +35,8 @@ public class CreateCatalogSchema {
         }
 
         final File f = new File(args[0]);
-        final Writer w = new FileWriter(f, StandardCharsets.UTF_8);
-        w.write(XMLSchemaGenerator.xmlSchemaAsString(StandaloneCatalog.class));
-        w.close();
+        try (final Writer w = new FileWriter(f, StandardCharsets.UTF_8)) {
+            w.write(XMLSchemaGenerator.xmlSchemaAsString(StandaloneCatalog.class));
+        }
     }
 }
