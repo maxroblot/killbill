@@ -17,10 +17,10 @@
 package org.killbill.billing.jaxrs.util;
 
 import java.net.URI;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.annotation.Nullable;
 import jakarta.inject.Inject;
@@ -38,10 +38,10 @@ import org.killbill.billing.util.config.definition.JaxrsConfig;
 public class JaxrsUriBuilder {
 
     private final JaxrsConfig jaxrsConfig;
-    private final Map<Class<?>, UriBuilder> classToUriBuilder = new HashMap<>();
-    private final Map<String, UriBuilder> classAndMethodToUriBuilder = new HashMap<>();
-    private final Map<String, UriBuilder> pathAndClassToUriBuilder = new HashMap<>();
-    private final Map<String, UriBuilder> pathClassAndMethodToUriBuilder = new HashMap<>();
+    private final Map<Class<?>, UriBuilder> classToUriBuilder = new ConcurrentHashMap<>();
+    private final Map<String, UriBuilder> classAndMethodToUriBuilder = new ConcurrentHashMap<>();
+    private final Map<String, UriBuilder> pathAndClassToUriBuilder = new ConcurrentHashMap<>();
+    private final Map<String, UriBuilder> pathClassAndMethodToUriBuilder = new ConcurrentHashMap<>();
 
     @Inject
     public JaxrsUriBuilder(final JaxrsConfig jaxrsConfig) {
@@ -149,13 +149,8 @@ public class JaxrsUriBuilder {
 
         UriBuilder uriBuilder = pathClassAndMethodToUriBuilder.get(key);
         if (uriBuilder == null) {
-            synchronized (pathClassAndMethodToUriBuilder) {
-                uriBuilder = pathClassAndMethodToUriBuilder.get(key);
-                if (uriBuilder == null) {
-                    uriBuilder = fromPath(path, theClass).path(theClass, getMethodName);
-                    pathClassAndMethodToUriBuilder.put(key, uriBuilder);
-                }
-            }
+            uriBuilder = fromPath(path, theClass).path(theClass, getMethodName);
+            pathClassAndMethodToUriBuilder.put(key, uriBuilder);
         }
         return uriBuilder.clone();
     }
@@ -165,13 +160,8 @@ public class JaxrsUriBuilder {
 
         UriBuilder uriBuilder = pathAndClassToUriBuilder.get(key);
         if (uriBuilder == null) {
-            synchronized (pathAndClassToUriBuilder) {
-                uriBuilder = pathAndClassToUriBuilder.get(key);
-                if (uriBuilder == null) {
-                    uriBuilder = UriBuilder.fromPath(path).path(theClass);
-                    pathAndClassToUriBuilder.put(key, uriBuilder);
-                }
-            }
+            uriBuilder = UriBuilder.fromPath(path).path(theClass);
+            pathAndClassToUriBuilder.put(key, uriBuilder);
         }
         return uriBuilder.clone();
     }
@@ -186,13 +176,8 @@ public class JaxrsUriBuilder {
 
         UriBuilder uriBuilder = classAndMethodToUriBuilder.get(key);
         if (uriBuilder == null) {
-            synchronized (classAndMethodToUriBuilder) {
-                uriBuilder = classAndMethodToUriBuilder.get(key);
-                if (uriBuilder == null) {
-                    uriBuilder = fromResource(theClass).path(theClass, getMethodName);
-                    classAndMethodToUriBuilder.put(key, uriBuilder);
-                }
-            }
+            uriBuilder = fromResource(theClass).path(theClass, getMethodName);
+            classAndMethodToUriBuilder.put(key, uriBuilder);
         }
         return uriBuilder.clone();
     }
@@ -200,13 +185,8 @@ public class JaxrsUriBuilder {
     private UriBuilder fromResource(final Class<?> theClass) {
         UriBuilder uriBuilder = classToUriBuilder.get(theClass);
         if (uriBuilder == null) {
-            synchronized (classToUriBuilder) {
-                uriBuilder = classToUriBuilder.get(theClass);
-                if (uriBuilder == null) {
-                    uriBuilder = UriBuilder.fromResource(theClass);
-                    classToUriBuilder.put(theClass, uriBuilder);
-                }
-            }
+            uriBuilder = UriBuilder.fromResource(theClass);
+            classToUriBuilder.put(theClass, uriBuilder);
         }
         return uriBuilder.clone();
     }

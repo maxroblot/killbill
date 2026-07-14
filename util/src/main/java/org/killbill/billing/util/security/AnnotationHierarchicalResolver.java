@@ -18,16 +18,16 @@ package org.killbill.billing.util.security;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.shiro.aop.AnnotationResolver;
 import org.apache.shiro.aop.MethodInvocation;
 
 public class AnnotationHierarchicalResolver implements AnnotationResolver {
 
-    private final Map<String, Annotation> methodToAnnotation = new HashMap<String, Annotation>();
+    private final Map<String, Annotation> methodToAnnotation = new ConcurrentHashMap<String, Annotation>();
 
     @Override
     public Annotation getAnnotation(final MethodInvocation mi, final Class<? extends Annotation> clazz) {
@@ -38,12 +38,9 @@ public class AnnotationHierarchicalResolver implements AnnotationResolver {
         final String key = method.toString();
         Annotation annotation = methodToAnnotation.get(key);
         if (annotation == null) {
-            synchronized (methodToAnnotation) {
-                annotation = methodToAnnotation.get(key);
-                if (annotation == null) {
-                    annotation = findAnnotation(method, clazz);
-                    methodToAnnotation.put(key, annotation);
-                }
+            annotation = findAnnotation(method, clazz);
+            if (annotation != null) {
+                methodToAnnotation.put(key, annotation);
             }
         }
         return annotation;

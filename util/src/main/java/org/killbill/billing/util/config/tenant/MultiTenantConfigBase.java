@@ -19,9 +19,9 @@ package org.killbill.billing.util.config.tenant;
 
 import java.lang.reflect.Method;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -34,7 +34,7 @@ import org.skife.config.TimeSpan;
 
 public abstract class MultiTenantConfigBase implements KillbillConfig {
 
-    private final Map<String, Method> methodsCache = new HashMap<>();
+    private final Map<String, Method> methodsCache = new ConcurrentHashMap<>();
     protected final KillbillConfig staticConfig;
 
     protected final CacheConfig cacheConfig;
@@ -122,17 +122,12 @@ public abstract class MultiTenantConfigBase implements KillbillConfig {
     protected Method getConfigStaticMethod(final String methodName) {
         Method method = methodsCache.get(methodName);
         if (method == null) {
-            synchronized (methodsCache) {
-                method = methodsCache.get(methodName);
-                if (method == null) {
-                    try {
-                        method = getConfigClass().getMethod(methodName, InternalTenantContext.class);
-                        methodsCache.put(methodName, method);
-                    } catch (final NoSuchMethodException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
+            try {
+                method = getConfigClass().getMethod(methodName, InternalTenantContext.class);
+            } catch (final NoSuchMethodException e) {
+                throw new RuntimeException(e);
             }
+            methodsCache.put(methodName, method);
         }
         return method;
     }
